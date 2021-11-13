@@ -1,7 +1,7 @@
 import arcade
 import os
-import json
 import math
+import pathlib
 from arcade.scene import Scene
 
 
@@ -37,6 +37,8 @@ LAYER_NAME_LADDERS = "Ladders"
 LAYER_NAME_PLAYER = "Player"
 LAYER_NAME_ENEMIES = "Enemies"
 
+ASSETS_PATH = pathlib.Path(__file__).resolve().parent / "assets"
+
 def load_texture_pair(filename):
     return [
         arcade.load_texture(filename),
@@ -65,7 +67,7 @@ class Entity(arcade.Sprite):
             self.idle_texture_pair = load_texture_pair(f"{main_path}_idle.png")
             self.jump_texture_pair = load_texture_pair(f"{main_path}_jump.png")
             self.fall_texture_pair = load_texture_pair(f"{main_path}_fall.png")
-
+  
             #Character walking textures
             self.walk_textures = []
             for i in range(8):
@@ -205,6 +207,7 @@ class Platformer(arcade.Window):
         
         self.end_of_map = 0
         
+        # Initial level
         self.level = 1
 
         #Load Sounds
@@ -222,8 +225,9 @@ class Platformer(arcade.Window):
         self.camera = arcade.Camera(self.width, self.height)
         self.gui_camera = arcade.Camera(self.width, self.height)
 
-        #Set the map
-        map_name = f":resources:tiled_maps/map_with_ladders.json"
+        #Set the map 
+        map_path = "level1.json"
+        map_name = ASSETS_PATH / map_path
         
         #Layer Specific Options for the map
         layer_options ={
@@ -278,7 +282,7 @@ class Platformer(arcade.Window):
                 cartesian[0] * TILE_SCALING * self.tile_map.tile_width
             )
             enemy.center_y = math.floor(
-            (cartesian[1] + 0.75)*(self.tile_map.tile_height*TILE_SCALING)
+            (cartesian[1] + 1.2 )*(self.tile_map.tile_height*TILE_SCALING)
             )
             if "boundary_left" in my_object.properties:
                 enemy.boundary_left = my_object.properties["boundary_left"]
@@ -287,7 +291,7 @@ class Platformer(arcade.Window):
             if "change_x" in my_object.properties:
                 enemy.change_x  = my_object.properties["change_x"]
             self.scene.add_sprite(LAYER_NAME_ENEMIES,enemy)
-            
+       
             
 
         #Set Background Color
@@ -295,6 +299,7 @@ class Platformer(arcade.Window):
             arcade.set_background_color(self.tile_map.tiled_map.background_color)
 
         #Create the 'physics engine'
+        
         self.physics_engine = arcade.PhysicsEnginePlatformer(
             self.player_sprite,
             [
@@ -304,7 +309,7 @@ class Platformer(arcade.Window):
             gravity_constant = GRAVITY,
             ladders = self.scene.get_sprite_list(LAYER_NAME_LADDERS)
         )
-
+        
     def on_draw(self):
         
         #Clear the screen to the background color
@@ -508,5 +513,4 @@ def main():
     arcade.run()
         
 if __name__ == "__main__":
-    main()        
-
+    main()     
